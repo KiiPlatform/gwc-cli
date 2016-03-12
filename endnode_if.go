@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"time"
 
 	"github.com/koron/go-dproxy"
@@ -93,12 +96,32 @@ func subscribToReceiveCommand() error {
 	sub := message.NewSubscribeMessage()
 	sub.AddTopic([]byte(topic), 0)
 
-	onPub := func(m *message.PublishMessage) error {
-		fmt.Printf("received command: \n%s\n", string(m.Payload()))
+	onRecv := func(m *message.PublishMessage) error {
+		p := m.Payload()
+		fmt.Printf("received command: \n%s\n", string(p))
+		var v interface{}
+		err := json.Unmarshal(p, &v)
+		if err != nil {
+			log.Println("failed to parse message :", err)
+			return nil
+		}
+		id, err := dproxy.New(v).M("commandID").String()
+		if err != nil {
+			log.Println("failed to parse message :", err)
+			return nil
+		}
+		if _, err := os.Stat("/path/to/whatever"); os.IsNotExist(err) {
+			err = os.Mkdir("commands", 0777)
+			if err != nil {
+				log.Println("failed to create dir:", err)
+				return nil
+			}
+		}
+		ioutil.WriteFile("commands/"+id+".json", p, 0600)
 		return nil
 	}
 
-	if err := lc.Subscribe(sub, nil, onPub); err != nil {
+	if err := lc.Subscribe(sub, nil, onRecv); err != nil {
 		return err
 	}
 	return nil
