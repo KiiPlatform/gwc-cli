@@ -22,6 +22,7 @@ var (
 type Config struct {
 	Apps           map[string]App `yaml:"apps"`
 	GatewayAddress GatewayAddress `yaml:"gateway-address"`
+	ConverterID    string         `yaml:"converter-id"`
 }
 
 type App struct {
@@ -57,7 +58,8 @@ func main() {
 		fmt.Println("No appName is specified. Provide with -aname")
 		return
 	}
-	_, err := connectToLocalBroker()
+	app := cc.Apps[*appName]
+	_, err := connectToLocalBroker(app, cc.ConverterID)
 	if err != nil {
 		fmt.Printf("fail to connect to local mqtt broker: %s\n", err)
 		return
@@ -99,11 +101,11 @@ MainLoop:
 				fmt.Printf("fail to publish command results: %s\n", err)
 			}
 		case "4":
-			if err := reportEndnodeStatus(true); err != nil {
+			if err := reportConnectionStatus(true); err != nil {
 				fmt.Println("fail to report online of endnode:", err)
 			}
 		case "5":
-			if err := reportEndnodeStatus(false); err != nil {
+			if err := reportConnectionStatus(false); err != nil {
 				fmt.Println("fail to report offline of endnode:", err)
 			}
 		}

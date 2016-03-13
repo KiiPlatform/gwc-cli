@@ -6,17 +6,16 @@ import (
 	"github.com/surgemq/surgemq/service"
 )
 
-func connectToLocalBroker() (*service.Client, error) {
+func connectToLocalBroker(app App, converterID string) (*service.Client, error) {
 	if lc != nil {
 		return lc, nil
 	}
 
-	app := cc.Apps[*appName]
 	lc = &service.Client{}
 	msg := message.NewConnectMessage()
 	msg.SetVersion(3)
 	msg.SetCleanSession(true)
-	msg.SetClientId([]byte(app.Site + "/" + app.ID + "/" + *endnodeVid))
+	msg.SetClientId([]byte(app.Site + "/" + app.ID + "/c/" + converterID))
 	msg.SetKeepAlive(300)
 
 	url := fmt.Sprintf("tcp://%s:%d", cc.GatewayAddress.Host, cc.GatewayAddress.Port)

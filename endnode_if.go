@@ -146,7 +146,7 @@ func publishCommandResults() error {
 
 }
 
-func reportEndnodeStatus(online bool) error {
+func reportConnectionStatus(online bool) error {
 	app := cc.Apps[*appName]
 	en := app.Site + "/" + app.ID + "/" + *endnodeVid
 	if online {
