@@ -53,7 +53,7 @@ func inputCommandResults() (string, error) {
 func onboardEndnode() error {
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/states"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
 	payload := `{}`
 
 	err := publishTopic(lc, topic, payload)
@@ -70,7 +70,7 @@ func onboardEndnode() error {
 func updateEndnodeState() error {
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/states"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
 
 	es, err := inputEndnodeState()
 	if err != nil {
@@ -90,7 +90,7 @@ func updateEndnodeState() error {
 func subscribToReceiveCommand() error {
 
 	app := cc.Apps[*appName]
-	topic := fmt.Sprintf("%s/%s/%s/commands", app.Site, app.ID, *endnodeVid)
+	topic := fmt.Sprintf("%s/%s/e/%s/commands", app.Site, app.ID, *endnodeVid)
 
 	// subscrible a topic.
 	sub := message.NewSubscribeMessage()
@@ -110,7 +110,7 @@ func subscribToReceiveCommand() error {
 			log.Println("failed to parse message :", err)
 			return nil
 		}
-		if _, err := os.Stat("/path/to/whatever"); os.IsNotExist(err) {
+		if _, err := os.Stat("commands"); os.IsNotExist(err) {
 			err = os.Mkdir("commands", 0777)
 			if err != nil {
 				log.Println("failed to create dir:", err)
@@ -134,7 +134,7 @@ func publishCommandResults() error {
 	}
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/commandResults"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/commandResults"
 	err = publishTopic(lc, topic, cr)
 	if err != nil {
 		return err
@@ -148,7 +148,7 @@ func publishCommandResults() error {
 
 func reportConnectionStatus(online bool) error {
 	app := cc.Apps[*appName]
-	en := app.Site + "/" + app.ID + "/" + *endnodeVid
+	en := app.Site + "/" + app.ID + "/e/" + *endnodeVid
 	if online {
 		return publishTopic(lc, en+"/connect", "{}")
 	}
