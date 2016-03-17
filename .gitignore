@@ -26,3 +26,4 @@ _testmain.go
 # executable
 /gwc-cli
 /config.yml
+/commands

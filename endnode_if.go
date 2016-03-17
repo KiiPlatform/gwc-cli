@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 	"time"
 
 	"github.com/koron/go-dproxy"
@@ -50,7 +53,7 @@ func inputCommandResults() (string, error) {
 func onboardEndnode() error {
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/states"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
 	payload := `{}`
 
 	err := publishTopic(lc, topic, payload)
@@ -67,7 +70,7 @@ func onboardEndnode() error {
 func updateEndnodeState() error {
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/states"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
 
 	es, err := inputEndnodeState()
 	if err != nil {
@@ -87,18 +90,38 @@ func updateEndnodeState() error {
 func subscribToReceiveCommand() error {
 
 	app := cc.Apps[*appName]
-	topic := fmt.Sprintf("%s/%s/%s/commands", app.Site, app.ID, *endnodeVid)
+	topic := fmt.Sprintf("%s/%s/e/%s/commands", app.Site, app.ID, *endnodeVid)
 
 	// subscrible a topic.
 	sub := message.NewSubscribeMessage()
 	sub.AddTopic([]byte(topic), 0)
 
-	onPub := func(m *message.PublishMessage) error {
-		fmt.Printf("received command: \n%s\n", string(m.Payload()))
+	onRecv := func(m *message.PublishMessage) error {
+		p := m.Payload()
+		fmt.Printf("received command: \n%s\n", string(p))
+		var v interface{}
+		err := json.Unmarshal(p, &v)
+		if err != nil {
+			log.Println("failed to parse message :", err)
+			return nil
+		}
+		id, err := dproxy.New(v).M("commandID").String()
+		if err != nil {
+			log.Println("failed to parse message :", err)
+			return nil
+		}
+		if _, err := os.Stat("commands"); os.IsNotExist(err) {
+			err = os.Mkdir("commands", 0777)
+			if err != nil {
+				log.Println("failed to create dir:", err)
+				return nil
+			}
+		}
+		ioutil.WriteFile("commands/"+id+".json", p, 0600)
 		return nil
 	}
 
-	if err := lc.Subscribe(sub, nil, onPub); err != nil {
+	if err := lc.Subscribe(sub, nil, onRecv); err != nil {
 		return err
 	}
 	return nil
@@ -111,7 +134,7 @@ func publishCommandResults() error {
 	}
 
 	app := cc.Apps[*appName]
-	topic := app.Site + "/" + app.ID + "/" + *endnodeVid + "/commandResults"
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/commandResults"
 	err = publishTopic(lc, topic, cr)
 	if err != nil {
 		return err
@@ -123,9 +146,9 @@ func publishCommandResults() error {
 
 }
 
-func reportEndnodeStatus(online bool) error {
+func reportConnectionStatus(online bool) error {
 	app := cc.Apps[*appName]
-	en := app.Site + "/" + app.ID + "/" + *endnodeVid
+	en := app.Site + "/" + app.ID + "/e/" + *endnodeVid
 	if online {
 		return publishTopic(lc, en+"/connect", "{}")
 	}
