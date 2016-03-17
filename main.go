@@ -73,14 +73,17 @@ func main() {
 		return
 	}
 
+	if err := onboardEndnode(); err != nil {
+		fmt.Printf("fail to onboard endnode:%s\n", err)
+	}
+
 	description :=
 		` Please select a feature by input the following number:
 		0. exit
-		1. End Node Onboarding (end-node  → gateway)
-		2. End Node State update (end-node → gateway ⇒ Kii Cloud)
-		3. End Node Command result (end-node → gateway ⇒ Kii Cloud)
-		4. Connect Endnode
-		5. Disconnect Endnode
+		1. End Node State update (end-node → gateway ⇒ Kii Cloud)
+		2. End Node Command result (end-node → gateway ⇒ Kii Cloud)
+		3. Connect Endnode
+		4. Disconnect Endnode
 		`
 	fmt.Printf("%s\n", description)
 
@@ -92,22 +95,18 @@ MainLoop:
 		case "0":
 			break MainLoop
 		case "1":
-			if err := onboardEndnode(); err != nil {
-				fmt.Printf("fail to onboard endnode:%s\n", err)
-			}
-		case "2":
 			if err := updateEndnodeState(); err != nil {
 				fmt.Printf("fail to update endnode state:%s\n", err)
 			}
-		case "3":
+		case "2":
 			if err := publishCommandResults(); err != nil {
 				fmt.Printf("fail to publish command results: %s\n", err)
 			}
-		case "4":
+		case "3":
 			if err := reportConnectionStatus(true); err != nil {
 				fmt.Println("fail to report online of endnode:", err)
 			}
-		case "5":
+		case "4":
 			if err := reportConnectionStatus(false); err != nil {
 				fmt.Println("fail to report offline of endnode:", err)
 			}
