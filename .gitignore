@@ -27,3 +27,4 @@ _testmain.go
 /gwc-cli
 /config.yml
 /commands
+/commandResult.json

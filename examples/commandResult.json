@@ -1,0 +1,6 @@
+{
+    "commandID":"Put received command-id here.",
+    "actionResults":[
+        {"turnPower":{"succeeded":true}}
+    ]
+}

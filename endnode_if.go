@@ -29,25 +29,27 @@ func inputEndnodeState() (string, error) {
 	return s, nil
 }
 
-func inputCommandResults() (string, error) {
-	var cr string
-	fmt.Println("Input command result (should be json format, consist of commandID and actionResults):")
-	fmt.Scanf("%s\n", &cr)
-
-	var v interface{}
-	err := json.Unmarshal([]byte(cr), &v)
+func readCommandResults() ([]byte, error) {
+	b, err := ioutil.ReadFile("commandResult.json")
 	if err != nil {
-		return "", err
+		return nil, err
+	}
+
+	// Validate contents.
+	var v interface{}
+	err = json.Unmarshal(b, &v)
+	if err != nil {
+		return nil, err
 	}
 	_, err = dproxy.New(v).M("commandID").String()
 	if err != nil {
-		return "", errors.New("no commandID included in command result")
+		return nil, errors.New("no commandID included in command result")
 	}
 	_, err = dproxy.New(v).M("actionResults").ProxySet().MapArray()
 	if err != nil {
-		return "", errors.New("no actionsResults included in command result")
+		return nil, errors.New("no actionsResults included in command result")
 	}
-	return cr, nil
+	return b, nil
 }
 
 func onboardEndnode() error {
@@ -128,18 +130,18 @@ func subscribToReceiveCommand() error {
 }
 
 func publishCommandResults() error {
-	cr, err := inputCommandResults()
+	b, err := readCommandResults()
 	if err != nil {
 		return err
 	}
 
 	app := cc.Apps[*appName]
 	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/commandResults"
-	err = publishTopic(lc, topic, cr)
+	err = publishTopic(lc, topic, string(b))
 	if err != nil {
 		return err
 	}
-	fmt.Printf("publish endnode state:%s:%s\n", topic, cr)
+	fmt.Printf("publish endnode state:%s:%s\n", topic, string(b))
 	// wait 2 second for publishing to success
 	time.Sleep(2 * time.Second)
 	return nil
