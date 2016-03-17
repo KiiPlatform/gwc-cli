@@ -19,18 +19,21 @@ var (
 	appName    = flag.String("aname", "", "Name of te app configured in sample_confing.yml")
 )
 
+// Config object
 type Config struct {
 	Apps           map[string]App `yaml:"apps"`
 	GatewayAddress GatewayAddress `yaml:"gateway-address"`
 	ConverterID    string         `yaml:"converter-id"`
 }
 
+// App represents Kii Cloud App.
 type App struct {
 	ID   string `yaml:"app-id"`
 	Key  string `yaml:"app-key"`
 	Site string `yaml:"app-site"`
 }
 
+// GatewayAddress repressents address of the Gateway.
 type GatewayAddress struct {
 	Host string `yaml:"host"`
 	Port int    `yaml:"port"`
