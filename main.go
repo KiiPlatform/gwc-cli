@@ -24,6 +24,7 @@ type Config struct {
 	Apps           map[string]App `yaml:"apps"`
 	GatewayAddress GatewayAddress `yaml:"gateway-address"`
 	ConverterID    string         `yaml:"converter-id"`
+	KeepAlive      uint16         `yaml:"keep-alive"`
 }
 
 // App represents Kii Cloud App.
@@ -62,7 +63,7 @@ func main() {
 		return
 	}
 	app := cc.Apps[*appName]
-	_, err := connectToLocalBroker(app, cc.ConverterID)
+	_, err := connectToLocalBroker(app, cc.ConverterID, cc.KeepAlive)
 	if err != nil {
 		fmt.Printf("fail to connect to local mqtt broker: %s\n", err)
 		return

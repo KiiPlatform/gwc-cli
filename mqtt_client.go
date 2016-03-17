@@ -6,7 +6,7 @@ import (
 	"github.com/surgemq/surgemq/service"
 )
 
-func connectToLocalBroker(app App, converterID string) (*service.Client, error) {
+func connectToLocalBroker(app App, converterID string, keepAlive uint16) (*service.Client, error) {
 	if lc != nil {
 		return lc, nil
 	}
@@ -16,7 +16,7 @@ func connectToLocalBroker(app App, converterID string) (*service.Client, error) 
 	msg.SetVersion(3)
 	msg.SetCleanSession(true)
 	msg.SetClientId([]byte(app.Site + "/" + app.ID + "/c/" + converterID))
-	msg.SetKeepAlive(300)
+	msg.SetKeepAlive(keepAlive)
 
 	url := fmt.Sprintf("tcp://%s:%d", cc.GatewayAddress.Host, cc.GatewayAddress.Port)
 	if err := lc.Connect(url, msg); err != nil {
