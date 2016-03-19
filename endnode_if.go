@@ -11,6 +11,7 @@ import (
 
 	"github.com/koron/go-dproxy"
 	"github.com/surgemq/message"
+	"github.com/surgemq/surgemq/service"
 )
 
 func inputEndnodeState() (string, error) {
@@ -52,13 +53,13 @@ func readCommandResults() ([]byte, error) {
 	return b, nil
 }
 
-func onboardEndnode() error {
+func onboardEndnode(c *service.Client) error {
 
 	app := cc.Apps[*appName]
 	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
 	payload := `{}`
 
-	err := publishTopic(lc, topic, payload)
+	err := publishTopic(c, topic, payload)
 	if err != nil {
 		return err
 	}
@@ -69,7 +70,7 @@ func onboardEndnode() error {
 	return nil
 }
 
-func updateEndnodeState() error {
+func updateEndnodeState(c *service.Client) error {
 
 	app := cc.Apps[*appName]
 	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/states"
@@ -79,7 +80,7 @@ func updateEndnodeState() error {
 		return err
 	}
 
-	err = publishTopic(lc, topic, es)
+	err = publishTopic(c, topic, es)
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func updateEndnodeState() error {
 	return nil
 }
 
-func subscribToReceiveCommand() error {
+func subscribToReceiveCommand(c *service.Client) error {
 
 	app := cc.Apps[*appName]
 	topic := fmt.Sprintf("%s/%s/e/%s/commands", app.Site, app.ID, *endnodeVid)
@@ -123,13 +124,13 @@ func subscribToReceiveCommand() error {
 		return nil
 	}
 
-	if err := lc.Subscribe(sub, nil, onRecv); err != nil {
+	if err := c.Subscribe(sub, nil, onRecv); err != nil {
 		return err
 	}
 	return nil
 }
 
-func publishCommandResults() error {
+func publishCommandResults(c *service.Client) error {
 	b, err := readCommandResults()
 	if err != nil {
 		return err
@@ -137,7 +138,7 @@ func publishCommandResults() error {
 
 	app := cc.Apps[*appName]
 	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/commandResults"
-	err = publishTopic(lc, topic, string(b))
+	err = publishTopic(c, topic, string(b))
 	if err != nil {
 		return err
 	}
@@ -148,11 +149,11 @@ func publishCommandResults() error {
 
 }
 
-func reportConnectionStatus(online bool) error {
+func reportConnectionStatus(c *service.Client, online bool) error {
 	app := cc.Apps[*appName]
 	en := app.Site + "/" + app.ID + "/e/" + *endnodeVid
 	if online {
-		return publishTopic(lc, en+"/connect", "{}")
+		return publishTopic(c, en+"/connect", "{}")
 	}
-	return publishTopic(lc, en+"/disconnect", "{}")
+	return publishTopic(c, en+"/disconnect", "{}")
 }
