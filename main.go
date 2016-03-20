@@ -12,7 +12,6 @@ import (
 )
 
 var (
-	lc *service.Client // client for local mqtt broker
 	cc Config
 
 	endnodeVid = flag.String("evid", "", "Vendor ThingID of Endnode(required).")
@@ -52,32 +51,27 @@ func init() {
 }
 
 func main() {
+	c := &service.Client{}
 	flag.Parse()
 
 	if *endnodeVid == "" {
-		fmt.Println("No vendorThingID of endnode found. Provide with -evid")
-		return
+		log.Fatalln("No vendorThingID of endnode found. Provide with -evid")
 	}
 	if *appName == "" {
-		fmt.Println("No appName is specified. Provide with -aname")
-		return
+		log.Fatalln("No appName is specified. Provide with -aname")
 	}
 	app := cc.Apps[*appName]
-	_, err := connectToLocalBroker(app, cc.ConverterID, cc.KeepAlive)
+	err := connectToLocalBroker(c, app, cc.ConverterID, cc.KeepAlive)
 	if err != nil {
-		fmt.Printf("fail to connect to local mqtt broker: %s\n", err)
-		return
+		log.Fatalln("fail to connect to local mqtt broker: ", err)
 	}
 	// subscribe to local mqtt broker after connect
-	if err := subscribToReceiveCommand(); err != nil {
-		fmt.Printf("fail to subscribe to local mqtt broker to receive command:%s\n", err)
-		return
+	if err := subscribToReceiveCommand(c); err != nil {
+		log.Fatalln("fail to subscribe to local mqtt broker to receive command: ", err)
 	}
-
-	if err := onboardEndnode(); err != nil {
-		fmt.Printf("fail to onboard endnode:%s\n", err)
+	if err := onboardEndnode(c); err != nil {
+		log.Fatalln("fail to onboard endnode: ", err)
 	}
-
 	description :=
 		` Please select a feature by input the following number:
 		0. exit
@@ -86,7 +80,7 @@ func main() {
 		3. Connect Endnode
 		4. Disconnect Endnode
 		`
-	fmt.Printf("%s\n", description)
+	log.Println(description)
 
 MainLoop:
 	for {
@@ -96,20 +90,20 @@ MainLoop:
 		case "0":
 			break MainLoop
 		case "1":
-			if err := updateEndnodeState(); err != nil {
-				fmt.Printf("fail to update endnode state:%s\n", err)
+			if err := updateEndnodeState(c); err != nil {
+				log.Println("fail to update endnode state: ", err)
 			}
 		case "2":
-			if err := publishCommandResults(); err != nil {
-				fmt.Printf("fail to publish command results: %s\n", err)
+			if err := publishCommandResults(c); err != nil {
+				log.Println("fail to publish command results: ", err)
 			}
 		case "3":
-			if err := reportConnectionStatus(true); err != nil {
-				fmt.Println("fail to report online of endnode:", err)
+			if err := reportConnectionStatus(c, true); err != nil {
+				log.Println("fail to report online of endnode: ", err)
 			}
 		case "4":
-			if err := reportConnectionStatus(false); err != nil {
-				fmt.Println("fail to report offline of endnode:", err)
+			if err := reportConnectionStatus(c, false); err != nil {
+				log.Println("fail to report offline of endnode: ", err)
 			}
 		}
 	}

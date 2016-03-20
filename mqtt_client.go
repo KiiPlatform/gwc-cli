@@ -6,12 +6,7 @@ import (
 	"github.com/surgemq/surgemq/service"
 )
 
-func connectToLocalBroker(app App, converterID string, keepAlive uint16) (*service.Client, error) {
-	if lc != nil {
-		return lc, nil
-	}
-
-	lc = &service.Client{}
+func connectToLocalBroker(c *service.Client, app App, converterID string, keepAlive uint16) error {
 	msg := message.NewConnectMessage()
 	msg.SetVersion(3)
 	msg.SetCleanSession(true)
@@ -19,10 +14,11 @@ func connectToLocalBroker(app App, converterID string, keepAlive uint16) (*servi
 	msg.SetKeepAlive(keepAlive)
 
 	url := fmt.Sprintf("tcp://%s:%d", cc.GatewayAddress.Host, cc.GatewayAddress.Port)
-	if err := lc.Connect(url, msg); err != nil {
-		panic(err)
+	err := c.Connect(url, msg)
+	if err != nil {
+		return err
 	}
-	return lc, nil
+	return nil
 }
 
 func publishTopic(c *service.Client, topic string, payload string) error {
@@ -31,9 +27,9 @@ func publishTopic(c *service.Client, topic string, payload string) error {
 	pub.SetQoS(0)
 	pub.SetPayload([]byte(payload))
 
-	if err := c.Publish(pub, nil); err != nil {
-		panic(err)
+	err := c.Publish(pub, nil)
+	if err != nil {
+		return err
 	}
-
 	return nil
 }
