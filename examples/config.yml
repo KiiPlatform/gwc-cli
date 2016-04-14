@@ -11,3 +11,4 @@ gateway-address:
   host: "127.0.0.1"
   port: 1883
 keep-alive: 30
+converter-id: converter1
