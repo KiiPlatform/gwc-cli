@@ -98,11 +98,11 @@ MainLoop:
 				log.Println("fail to publish command results: ", err)
 			}
 		case "3":
-			if err := reportConnectionStatus(c, true); err != nil {
+			if err := reportConnectStatus(c); err != nil {
 				log.Println("fail to report online of endnode: ", err)
 			}
 		case "4":
-			if err := reportConnectionStatus(c, false); err != nil {
+			if err := reportDisconnectStatus(c); err != nil {
 				log.Println("fail to report offline of endnode: ", err)
 			}
 		}
