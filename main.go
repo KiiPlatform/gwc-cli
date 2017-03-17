@@ -79,6 +79,8 @@ func main() {
 		2. End Node Command result (end-node → gateway ⇒ Kii Cloud)
 		3. Connect Endnode
 		4. Disconnect Endnode
+		5. End Node multiple trait format State udpate
+		6. End Node single trait format state udpate
 		`
 	log.Println(description)
 
@@ -104,6 +106,14 @@ MainLoop:
 		case "4":
 			if err := reportDisconnectStatus(c); err != nil {
 				log.Println("fail to report offline of endnode: ", err)
+			}
+		case "5":
+			if err := updateMultipleTraitState(c); err != nil {
+				log.Println("fail to update endnode multiple trait state: ", err)
+			}
+		case "6":
+			if err := updateSingleTraitState(c); err != nil {
+				log.Println("fail to update endnode single trait state: ", err)
 			}
 		}
 	}

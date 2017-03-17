@@ -105,6 +105,48 @@ func updateEndnodeState(c *service.Client) error {
 	return nil
 }
 
+func updateMultipleTraitState(c *service.Client) error {
+	app := cc.Apps[*appName]
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/traitState"
+
+	es, err := inputEndnodeState()
+	if err != nil {
+		return err
+	}
+
+	err = publishTopic(c, topic, es)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("publish endnode trait state:%s:%s\n", topic, es)
+	// wait 2 second for publishing to success
+	time.Sleep(2 * time.Second)
+	return nil
+}
+
+func updateSingleTraitState(c *service.Client) error {
+	var alias string
+	fmt.Println("Input alias string:")
+	fmt.Scanf("%s\n", &alias)
+
+	app := cc.Apps[*appName]
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/traitState/" + alias
+
+	es, err := inputEndnodeState()
+	if err != nil {
+		return err
+	}
+
+	err = publishTopic(c, topic, es)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("publish endnode trait state:%s:%s\n", topic, es)
+	// wait 2 second for publishing to success
+	time.Sleep(2 * time.Second)
+	return nil
+}
+
 func subscribToReceiveCommand(c *service.Client) error {
 
 	app := cc.Apps[*appName]
