@@ -30,6 +30,21 @@ func inputEndnodeState() (string, error) {
 	return s, nil
 }
 
+func inputJSONString() (string, error) {
+	var s string
+	fmt.Scanf("%s\n", &s)
+	var v interface{}
+	err := json.Unmarshal([]byte(s), &v)
+	if err != nil {
+		return "", fmt.Errorf("inputs is not json format:%s\n", err)
+	}
+	_, err = dproxy.New(v).Map()
+	if err != nil {
+		return "", fmt.Errorf("input is not json format:%s\n", err)
+	}
+	return s, nil
+}
+
 func readCommandResults() ([]byte, error) {
 	b, err := ioutil.ReadFile("commandResult.json")
 	if err != nil {
@@ -149,11 +164,19 @@ func publishCommandResults(c *service.Client) error {
 
 }
 
-func reportConnectionStatus(c *service.Client, online bool) error {
+func reportConnectStatus(c *service.Client) error {
+	app := cc.Apps[*appName]
+	fmt.Println("Input thing properties for endnode(should be json format):")
+	info, err := inputJSONString()
+	if err != nil {
+		return err
+	}
+	en := app.Site + "/" + app.ID + "/e/" + *endnodeVid
+	return publishTopic(c, en+"/connect", info)
+}
+
+func reportDisconnectStatus(c *service.Client) error {
 	app := cc.Apps[*appName]
 	en := app.Site + "/" + app.ID + "/e/" + *endnodeVid
-	if online {
-		return publishTopic(c, en+"/connect", "{}")
-	}
 	return publishTopic(c, en+"/disconnect", "{}")
 }
