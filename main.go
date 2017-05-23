@@ -81,6 +81,7 @@ func main() {
 		4. Disconnect Endnode
 		5. End Node multiple trait format State udpate
 		6. End Node single trait format state udpate
+		7. Update trait command result
 		`
 	log.Println(description)
 
@@ -114,6 +115,10 @@ MainLoop:
 		case "6":
 			if err := updateSingleTraitState(c); err != nil {
 				log.Println("fail to update endnode single trait state: ", err)
+			}
+		case "7":
+			if err := publishTraitCommandResults(c); err != nil {
+				log.Println("fail to publish command results: ", err)
 			}
 		}
 	}

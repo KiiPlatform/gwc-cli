@@ -206,6 +206,25 @@ func publishCommandResults(c *service.Client) error {
 
 }
 
+func publishTraitCommandResults(c *service.Client) error {
+	b, err := readCommandResults()
+	if err != nil {
+		return err
+	}
+
+	app := cc.Apps[*appName]
+	topic := app.Site + "/" + app.ID + "/e/" + *endnodeVid + "/traitCmdResults"
+	err = publishTopic(c, topic, string(b))
+	if err != nil {
+		return err
+	}
+	fmt.Printf("publish endnode state:%s:%s\n", topic, string(b))
+	// wait 2 second for publishing to success
+	time.Sleep(2 * time.Second)
+	return nil
+
+}
+
 func reportConnectStatus(c *service.Client) error {
 	app := cc.Apps[*appName]
 	fmt.Println("Input thing properties for endnode(should be json format):")
